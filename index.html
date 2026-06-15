@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edvelup Batch Management System — Internal Dashboard</title>
+  <meta name="description" content="Internal batch availability and sales support dashboard for Edvelup Academy counselors.">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="logo.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ============ DASHBOARD HEADER ============ -->
+  <header class="dashboard-header" id="dashboard-header">
+    <div class="header-inner">
+      <div class="header-left">
+        <div class="logo-area">
+          <img src="logo.png" alt="Edvelup Academy" class="logo-img" id="logo-img">
+          <div class="logo-text">
+            <h1 id="dashboard-title">EDVELUP BATCH MANAGEMENT SYSTEM</h1>
+            <p class="header-subtitle">Internal Sales Dashboard &mdash; Counselor Access Only</p>
+          </div>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="header-badge" id="badge-intake">
+          <span class="badge-dot green"></span>
+          <span class="badge-label">Current Intake:</span>
+          <span class="badge-value">July 2026</span>
+        </div>
+        <div class="header-badge" id="badge-status">
+          <span class="badge-dot green pulse"></span>
+          <span class="badge-label">Status:</span>
+          <span class="badge-value">Admissions Open</span>
+        </div>
+        <div class="header-badge" id="badge-offer">
+          <span class="badge-dot green pulse"></span>
+          <span class="badge-label">Offer Status:</span>
+          <span class="badge-value">Active</span>
+        </div>
+        <div class="viewer-counter" id="viewer-counter">
+          <span class="viewer-icon">👁</span>
+          <span id="viewer-count">24</span> counselors viewing
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ MAIN DASHBOARD ============ -->
+  <main class="dashboard-container" id="dashboard-main">
+
+    <!-- ---- STATS BAR ---- -->
+    <section class="stats-bar" id="stats-bar" aria-label="Quick statistics">
+      <div class="stat-card" id="stat-viewers">
+        <div class="stat-icon">👁‍🗨</div>
+        <div class="stat-info">
+          <span class="stat-number" id="stat-viewers-count" data-target="24">0</span>
+          <span class="stat-label">Current Viewers</span>
+        </div>
+      </div>
+      <div class="stat-card" id="stat-daily">
+        <div class="stat-icon">📋</div>
+        <div class="stat-info">
+          <span class="stat-number" id="stat-daily-count" data-target="23">0</span>
+          <span class="stat-label">Today's Admissions</span>
+        </div>
+      </div>
+      <div class="stat-card" id="stat-weekly">
+        <div class="stat-icon">📊</div>
+        <div class="stat-info">
+          <span class="stat-number" id="stat-weekly-count" data-target="87">0</span>
+          <span class="stat-label">This Week</span>
+        </div>
+      </div>
+      <div class="stat-card" id="stat-total-seats">
+        <div class="stat-icon">🎯</div>
+        <div class="stat-info">
+          <span class="stat-number" id="stat-total-remaining" data-target="23">0</span>
+          <span class="stat-label">Total Seats Left</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---- COURSE AVAILABILITY CARDS ---- -->
+    <section class="section-block" id="section-courses" aria-label="Course availability">
+      <div class="section-header">
+        <h2 class="section-title" id="courses-title">
+          <span class="title-accent"></span>
+          Course Availability Panel
+        </h2>
+        <button class="btn btn-secondary btn-sm" id="generate-student-view" aria-label="Generate student view for screenshot">
+          📸 Generate Student View
+        </button>
+      </div>
+      <div class="course-cards-grid" id="course-cards-grid">
+        <!-- Rendered by JS -->
+      </div>
+    </section>
+
+    <!-- ---- MIDDLE ROW: Availability Checker + Eligibility Counter ---- -->
+    <section class="two-col-grid" id="section-middle" aria-label="Availability and eligibility">
+      <!-- Availability Checker -->
+      <div class="panel-card availability-checker" id="availability-checker">
+        <h2 class="section-title" id="checker-title">
+          <span class="title-accent"></span>
+          Availability Checker
+        </h2>
+        <p class="panel-desc">Select a course to view detailed batch availability status.</p>
+        <div class="select-wrapper" id="select-wrapper">
+          <select id="course-select" aria-label="Select a course to check availability">
+            <option value="">— Select Course —</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Offer Eligibility Counter -->
+      <div class="panel-card eligibility-counter" id="eligibility-counter">
+        <h2 class="section-title" id="eligibility-title">
+          <span class="title-accent"></span>
+          Discount Seats Available
+        </h2>
+        <div class="eligibility-grid" id="eligibility-grid">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ---- BOTTOM ROW: Charts + Demand Ranking ---- -->
+    <section class="two-col-grid" id="section-charts" aria-label="Charts and analytics">
+      <!-- Batch Occupancy Chart -->
+      <div class="panel-card chart-container" id="chart-container">
+        <h2 class="section-title" id="chart-title">
+          <span class="title-accent"></span>
+          Batch Occupancy
+        </h2>
+        <div class="occupancy-chart" id="occupancy-chart">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+      <!-- Course Demand Ranking -->
+      <div class="panel-card demand-ranking" id="demand-ranking-panel">
+        <h2 class="section-title" id="ranking-title">
+          <span class="title-accent"></span>
+          Course Demand Ranking
+        </h2>
+        <div class="demand-ranking-list" id="demand-ranking">
+          <!-- Rendered by JS -->
+        </div>
+        <div class="utilization-section" id="utilization-section">
+          <h3 class="subsection-title">Seat Utilization</h3>
+          <div class="utilization-grid" id="utilization-grid">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---- RECENT ADMISSIONS ---- -->
+    <section class="section-block" id="section-admissions" aria-label="Recent admissions">
+      <h2 class="section-title" id="admissions-title">
+        <span class="title-accent"></span>
+        Recent Admissions
+      </h2>
+      <div class="admissions-panel" id="admissions-panel">
+        <div class="admissions-list" id="admissions-list">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============ LIVE ACTIVITY FEED (toast container) ============ -->
+  <div class="toast-container" id="toast-container" aria-live="polite" aria-label="Live activity feed">
+    <!-- Toasts injected by JS -->
+  </div>
+
+  <!-- ============ AVAILABILITY STATUS DIALOG ============ -->
+  <dialog class="modal-dialog" id="availability-dialog" aria-labelledby="avail-dialog-title">
+    <div class="modal-content">
+      <button class="modal-close" id="availability-dialog-close" aria-label="Close dialog">&times;</button>
+      <div class="modal-header">
+        <div class="modal-icon">📊</div>
+        <h2 class="modal-title" id="avail-dialog-title">BATCH AVAILABILITY STATUS</h2>
+      </div>
+      <div class="modal-body" id="availability-dialog-body">
+        <!-- Filled by JS -->
+      </div>
+      <div class="modal-actions" id="availability-dialog-actions">
+        <button class="btn btn-primary" id="btn-screenshot" aria-label="Take screenshot">
+          📸 Take Screenshot
+        </button>
+        <button class="btn btn-secondary" id="btn-print" aria-label="Print report">
+          🖨 Print
+        </button>
+        <button class="btn btn-secondary" id="btn-download" aria-label="Download report">
+          ⬇ Download Report
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- ============ STUDENT VIEW DIALOG (Screenshot Mode) ============ -->
+  <dialog class="student-view-dialog" id="student-view-dialog" aria-labelledby="student-view-title">
+    <div class="student-view-content" id="student-view-content">
+      <button class="student-view-close" id="student-view-close" aria-label="Close student view">&times;</button>
+      <div class="student-view-header">
+        <div class="sv-logo-bar">
+          <img src="logo.png" alt="Edvelup" class="sv-logo">
+          <span class="sv-brand">EDVELUP ACADEMY</span>
+        </div>
+      </div>
+      <div class="student-view-body" id="student-view-body">
+        <h2 class="sv-title" id="student-view-title">Special Discount Eligibility Status</h2>
+        <div class="sv-course-selector">
+          <select id="sv-course-select" aria-label="Select course for student view">
+            <option value="">— Select Course —</option>
+          </select>
+        </div>
+        <div class="sv-data" id="sv-data">
+          <!-- Filled by JS -->
+        </div>
+      </div>
+      <div class="student-view-footer" id="student-view-footer">
+        <!-- Timestamp by JS -->
+      </div>
+    </div>
+  </dialog>
+
+  <script src="script.js"></script>
+</body>
+</html>
