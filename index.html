@@ -237,26 +237,6 @@
     </div>
   </dialog>
 
-  <!-- ============ ADMIN LOGIN DIALOG ============ -->
-  <dialog class="admin-login-dialog" id="admin-login-dialog" aria-labelledby="admin-login-title">
-    <div class="admin-login-content">
-      <button class="modal-close" id="admin-login-close" aria-label="Close login">&times;</button>
-      <span class="admin-login-icon">🔐</span>
-      <h2 class="admin-login-title" id="admin-login-title">Admin Access</h2>
-      <p class="admin-login-subtitle">Enter password to access the Admin Control Panel</p>
-      <div class="admin-login-input-group">
-        <span class="input-icon">🔑</span>
-        <input type="password" id="admin-password-input" placeholder="Enter admin password" autocomplete="off">
-      </div>
-      <div class="admin-login-error" id="admin-login-error"></div>
-      <div class="admin-login-actions">
-        <button class="btn btn-primary" id="admin-login-submit">🔓 Unlock</button>
-        <button class="btn btn-secondary" id="admin-login-close-btn"
-          onclick="document.getElementById('admin-login-dialog').close()">Cancel</button>
-      </div>
-    </div>
-  </dialog>
-
   <!-- ============ ADMIN PANEL DIALOG ============ -->
   <dialog class="admin-panel-dialog" id="admin-panel-dialog" aria-labelledby="admin-panel-title">
     <div class="admin-panel-content">
@@ -273,10 +253,8 @@
         <button class="admin-panel-close" id="admin-panel-close" aria-label="Close admin panel">&times;</button>
       </div>
 
-      <!-- Admin Tabs -->
       <div class="admin-tabs">
         <button class="admin-tab-btn active" data-tab="courses">📚 Courses</button>
-        <button class="admin-tab-btn" data-tab="offers">🎁 Offers</button>
         <button class="admin-tab-btn" data-tab="scenarios">⚡ Scenarios</button>
       </div>
 
@@ -338,6 +316,15 @@
                   <option value="Within 2 Weeks">Within 2 Weeks</option>
                 </select>
               </div>
+              <div class="admin-field">
+                <label for="admin-course-0-offer-status">Offer Status</label>
+                <select id="admin-course-0-offer-status">
+                  <option value="Active">Active</option>
+                  <option value="Limited">Limited</option>
+                  <option value="Closing Soon">Closing Soon</option>
+                  <option value="Expired">Expired</option>
+                </select>
+              </div>
             </div>
           </div>
 
@@ -391,6 +378,15 @@
                   <option value="Within 5 Days" selected>Within 5 Days</option>
                   <option value="Within 1 Week">Within 1 Week</option>
                   <option value="Within 2 Weeks">Within 2 Weeks</option>
+                </select>
+              </div>
+              <div class="admin-field">
+                <label for="admin-course-1-offer-status">Offer Status</label>
+                <select id="admin-course-1-offer-status">
+                  <option value="Active">Active</option>
+                  <option value="Limited">Limited</option>
+                  <option value="Closing Soon">Closing Soon</option>
+                  <option value="Expired">Expired</option>
                 </select>
               </div>
             </div>
@@ -448,53 +444,21 @@
                   <option value="Within 2 Weeks">Within 2 Weeks</option>
                 </select>
               </div>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- TAB: Offers -->
-        <div class="admin-tab-panel" id="admin-tab-offers">
-          <div class="admin-course-block">
-            <div class="admin-course-title">Offer Configuration</div>
-            <div class="admin-field-grid">
-              <div class="admin-field admin-field-full">
-                <label for="admin-offer-name">Offer Name</label>
-                <input type="text" id="admin-offer-name" value="First 50 Pre-Registered Students Offer">
-              </div>
               <div class="admin-field">
-                <label for="admin-offer-percentage">Offer Percentage (%)</label>
-                <select id="admin-offer-percentage">
-                  <option value="40">40%</option>
-                  <option value="50" selected>50%</option>
-                  <option value="60">60%</option>
-                  <option value="70">70%</option>
-                </select>
-              </div>
-              <div class="admin-field">
-                <label for="admin-offer-status">Offer Status</label>
-                <select id="admin-offer-status">
-                  <option value="Active" selected>Active</option>
+                <label for="admin-course-2-offer-status">Offer Status</label>
+                <select id="admin-course-2-offer-status">
+                  <option value="Active">Active</option>
                   <option value="Limited">Limited</option>
                   <option value="Closing Soon">Closing Soon</option>
                   <option value="Expired">Expired</option>
                 </select>
               </div>
-              <div class="admin-field">
-                <label for="admin-offer-total-seats">Total Offer Seats</label>
-                <input type="number" id="admin-offer-total-seats" value="50" min="1">
-              </div>
-              <div class="admin-field">
-                <label for="admin-offer-used-seats">Used Offer Seats</label>
-                <input type="number" id="admin-offer-used-seats" value="43" min="0">
-              </div>
-              <div class="admin-field admin-field-full">
-                <label>Remaining Offer Seats (Auto)</label>
-                <div class="auto-calc-value" id="admin-offer-remaining-seats">7</div>
-              </div>
             </div>
           </div>
+
         </div>
+
+
 
         <!-- TAB: Scenarios -->
         <div class="admin-tab-panel" id="admin-tab-scenarios">

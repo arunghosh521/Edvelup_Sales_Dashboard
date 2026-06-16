@@ -20,7 +20,8 @@ const DEFAULT_COURSES_DATA = [
     status: 'Almost Full',
     statusColor: 'red',
     expectedClosure: 'Within 2 Days',
-    offerCategory: 'First 50 Pre-Registered Students'
+    offerCategory: 'First 50 Pre-Registered Students Offer',
+    offerStatus: 'Active'
   },
   {
     id: 'forex',
@@ -34,7 +35,8 @@ const DEFAULT_COURSES_DATA = [
     status: 'Limited Availability',
     statusColor: 'orange',
     expectedClosure: 'Within 5 Days',
-    offerCategory: 'First 50 Pre-Registered Students'
+    offerCategory: 'First 50 Pre-Registered Students Offer',
+    offerStatus: 'Active'
   },
   {
     id: 'integrated',
@@ -48,52 +50,34 @@ const DEFAULT_COURSES_DATA = [
     status: 'Closing Soon',
     statusColor: 'red',
     expectedClosure: 'Within 1 Day',
-    offerCategory: 'First 50 Pre-Registered Students'
+    offerCategory: 'First 50 Pre-Registered Students Offer',
+    offerStatus: 'Closing Soon'
   }
 ];
-
-const DEFAULT_OFFER_DATA = {
-  offerName: 'First 50 Pre-Registered Students Offer',
-  offerPercentage: 50,
-  offerStatus: 'Active',
-  totalOfferSeats: 50,
-  usedOfferSeats: 43,
-  remainingOfferSeats: 7
-};
 
 // ==========================================
 // 2. MUTABLE STATE — Loaded from localStorage or defaults
 // ==========================================
 let coursesData = [];
-let offerData = {};
 
 function loadFromStorage() {
   try {
     const savedCourses = localStorage.getItem('edvelup_courses');
-    const savedOffer = localStorage.getItem('edvelup_offer');
 
     if (savedCourses) {
       coursesData = JSON.parse(savedCourses);
     } else {
       coursesData = JSON.parse(JSON.stringify(DEFAULT_COURSES_DATA));
     }
-
-    if (savedOffer) {
-      offerData = JSON.parse(savedOffer);
-    } else {
-      offerData = JSON.parse(JSON.stringify(DEFAULT_OFFER_DATA));
-    }
   } catch (e) {
     console.warn('Failed to load from localStorage, using defaults:', e);
     coursesData = JSON.parse(JSON.stringify(DEFAULT_COURSES_DATA));
-    offerData = JSON.parse(JSON.stringify(DEFAULT_OFFER_DATA));
   }
 }
 
 function saveToStorage() {
   try {
     localStorage.setItem('edvelup_courses', JSON.stringify(coursesData));
-    localStorage.setItem('edvelup_offer', JSON.stringify(offerData));
   } catch (e) {
     console.warn('Failed to save to localStorage:', e);
   }
@@ -101,9 +85,7 @@ function saveToStorage() {
 
 function resetToDefaults() {
   localStorage.removeItem('edvelup_courses');
-  localStorage.removeItem('edvelup_offer');
   coursesData = JSON.parse(JSON.stringify(DEFAULT_COURSES_DATA));
-  offerData = JSON.parse(JSON.stringify(DEFAULT_OFFER_DATA));
   refreshDashboard();
 }
 
@@ -438,7 +420,7 @@ function openAvailabilityDialog(courseId) {
     </div>
     <div class="modal-data-row">
       <span class="modal-data-label">Offer Category</span>
-      <span class="modal-data-value">${offerData.offerName || course.offerCategory}</span>
+      <span class="modal-data-value">${course.offerCategory}</span>
     </div>
     <div class="modal-data-row">
       <span class="modal-data-label">Expected Closure</span>
@@ -483,7 +465,7 @@ function renderStudentViewData(course) {
   const body = document.getElementById('sv-data');
   if (!body) return;
 
-  const offerStatusText = offerData.offerStatus || 'Active';
+  const offerStatusText = course.offerStatus || 'Active';
 
   body.innerHTML = `
     <div class="sv-data-row">
@@ -512,7 +494,7 @@ function renderStudentViewData(course) {
     </div>
     <div class="sv-data-row">
       <span class="sv-data-label">Eligibility</span>
-      <span class="sv-data-value">${offerData.offerName || 'Available Until First 50 Registrations'}</span>
+      <span class="sv-data-value">${course.offerCategory || 'Available Until First 50 Registrations'}</span>
     </div>
     <div class="sv-data-row">
       <span class="sv-data-label">Expected Closure</span>
@@ -632,56 +614,13 @@ function refreshDashboard() {
   renderUtilization();
   populateDropdowns();
   animateStats();
-
-  // Update header offer status badge
-  const offerBadgeValue = document.querySelector('#badge-offer .badge-value');
-  if (offerBadgeValue) {
-    offerBadgeValue.textContent = offerData.offerStatus || 'Active';
-  }
 }
 
 // ==========================================
-// 18. ADMIN PANEL — Password & Access
+// 18. ADMIN PANEL — Access
 // ==========================================
-let adminAuthenticated = false;
-
-function openAdminLogin() {
-  const dialog = document.getElementById('admin-login-dialog');
-  if (dialog) {
-    const passwordInput = document.getElementById('admin-password-input');
-    if (passwordInput) passwordInput.value = '';
-    const errorEl = document.getElementById('admin-login-error');
-    if (errorEl) errorEl.style.display = 'none';
-    dialog.showModal();
-  }
-}
-
-function validateAdminPassword() {
-  const passwordInput = document.getElementById('admin-password-input');
-  const errorEl = document.getElementById('admin-login-error');
-
-  if (passwordInput && passwordInput.value === 'admin123') {
-    adminAuthenticated = true;
-    document.getElementById('admin-login-dialog').close();
-    openAdminPanel();
-  } else {
-    if (errorEl) {
-      errorEl.style.display = 'block';
-      errorEl.textContent = '⚠ Incorrect password. Please try again.';
-    }
-    if (passwordInput) {
-      passwordInput.classList.add('shake');
-      setTimeout(() => passwordInput.classList.remove('shake'), 500);
-    }
-  }
-}
 
 function openAdminPanel() {
-  if (!adminAuthenticated) {
-    openAdminLogin();
-    return;
-  }
-
   populateAdminFields();
   const dialog = document.getElementById('admin-panel-dialog');
   if (dialog) dialog.showModal();
@@ -706,17 +645,8 @@ function populateAdminFields() {
 
     setVal(`${prefix}-status`, course.status);
     setVal(`${prefix}-expected-closure`, course.expectedClosure);
+    setVal(`${prefix}-offer-status`, course.offerStatus);
   });
-
-  // Populate offer fields
-  setVal('admin-offer-name', offerData.offerName);
-  setVal('admin-offer-percentage', offerData.offerPercentage);
-  setVal('admin-offer-status', offerData.offerStatus);
-  setVal('admin-offer-total-seats', offerData.totalOfferSeats);
-  setVal('admin-offer-used-seats', offerData.usedOfferSeats);
-
-  const remainingEl = document.getElementById('admin-offer-remaining-seats');
-  if (remainingEl) remainingEl.textContent = offerData.totalOfferSeats - offerData.usedOfferSeats;
 }
 
 function setVal(id, value) {
@@ -738,6 +668,7 @@ function saveAdminConfig() {
     course.seatsAllocated = parseInt(getVal(`${prefix}-total-seats`)) || course.seatsAllocated;
     course.registered = parseInt(getVal(`${prefix}-filled-seats`)) || 0;
     course.available = course.seatsAllocated - course.registered;
+    course.offerCategory = `First ${course.seatsAllocated} Pre-Registered Students Offer`;
 
     const statusVal = getVal(`${prefix}-status`);
     if (statusVal) {
@@ -757,17 +688,11 @@ function saveAdminConfig() {
       course.expectedClosure = closureVal;
     }
 
-    // Update offer category with current offer name
-    course.offerCategory = offerData.offerName || course.offerCategory;
+    const offerStatusVal = getVal(`${prefix}-offer-status`);
+    if (offerStatusVal) {
+      course.offerStatus = offerStatusVal;
+    }
   });
-
-  // Read offer fields
-  offerData.offerName = getVal('admin-offer-name') || offerData.offerName;
-  offerData.offerPercentage = parseInt(getVal('admin-offer-percentage')) || offerData.offerPercentage;
-  offerData.offerStatus = getVal('admin-offer-status') || offerData.offerStatus;
-  offerData.totalOfferSeats = parseInt(getVal('admin-offer-total-seats')) || offerData.totalOfferSeats;
-  offerData.usedOfferSeats = parseInt(getVal('admin-offer-used-seats')) || offerData.usedOfferSeats;
-  offerData.remainingOfferSeats = offerData.totalOfferSeats - offerData.usedOfferSeats;
 
   saveToStorage();
   refreshDashboard();
@@ -969,39 +894,7 @@ function setupEventListeners() {
   // Admin Settings Button
   const adminBtn = document.getElementById('admin-settings-btn');
   if (adminBtn) {
-    adminBtn.addEventListener('click', () => {
-      if (adminAuthenticated) {
-        openAdminPanel();
-      } else {
-        openAdminLogin();
-      }
-    });
-  }
-
-  // Admin Login — Submit
-  const adminLoginSubmit = document.getElementById('admin-login-submit');
-  if (adminLoginSubmit) {
-    adminLoginSubmit.addEventListener('click', validateAdminPassword);
-  }
-
-  // Admin Login — Enter key
-  const adminPasswordInput = document.getElementById('admin-password-input');
-  if (adminPasswordInput) {
-    adminPasswordInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') validateAdminPassword();
-    });
-  }
-
-  // Admin Login — Close
-  const adminLoginClose = document.getElementById('admin-login-close');
-  const adminLoginDialog = document.getElementById('admin-login-dialog');
-  if (adminLoginClose && adminLoginDialog) {
-    adminLoginClose.addEventListener('click', () => adminLoginDialog.close());
-  }
-  if (adminLoginDialog) {
-    adminLoginDialog.addEventListener('click', (e) => {
-      if (e.target === adminLoginDialog) adminLoginDialog.close();
-    });
+    adminBtn.addEventListener('click', openAdminPanel);
   }
 
   // Admin Panel — Close
