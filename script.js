@@ -1,12 +1,13 @@
 /* ================================================
    EDVELUP BATCH MANAGEMENT SYSTEM — SCRIPT
    Internal Sales Dashboard for Counselor Use
+   With Admin Control Panel
    ================================================ */
 
 // ==========================================
-// 1. DATA — Course Information
+// 1. DATA — Default Course Information (immutable)
 // ==========================================
-const coursesData = [
+const DEFAULT_COURSES_DATA = [
   {
     id: 'stock-market',
     name: 'Stock Market Trading',
@@ -51,8 +52,63 @@ const coursesData = [
   }
 ];
 
+const DEFAULT_OFFER_DATA = {
+  offerName: 'First 50 Pre-Registered Students Offer',
+  offerPercentage: 50,
+  offerStatus: 'Active',
+  totalOfferSeats: 50,
+  usedOfferSeats: 43,
+  remainingOfferSeats: 7
+};
+
 // ==========================================
-// 2. DATA — Recent Admissions (20 entries)
+// 2. MUTABLE STATE — Loaded from localStorage or defaults
+// ==========================================
+let coursesData = [];
+let offerData = {};
+
+function loadFromStorage() {
+  try {
+    const savedCourses = localStorage.getItem('edvelup_courses');
+    const savedOffer = localStorage.getItem('edvelup_offer');
+
+    if (savedCourses) {
+      coursesData = JSON.parse(savedCourses);
+    } else {
+      coursesData = JSON.parse(JSON.stringify(DEFAULT_COURSES_DATA));
+    }
+
+    if (savedOffer) {
+      offerData = JSON.parse(savedOffer);
+    } else {
+      offerData = JSON.parse(JSON.stringify(DEFAULT_OFFER_DATA));
+    }
+  } catch (e) {
+    console.warn('Failed to load from localStorage, using defaults:', e);
+    coursesData = JSON.parse(JSON.stringify(DEFAULT_COURSES_DATA));
+    offerData = JSON.parse(JSON.stringify(DEFAULT_OFFER_DATA));
+  }
+}
+
+function saveToStorage() {
+  try {
+    localStorage.setItem('edvelup_courses', JSON.stringify(coursesData));
+    localStorage.setItem('edvelup_offer', JSON.stringify(offerData));
+  } catch (e) {
+    console.warn('Failed to save to localStorage:', e);
+  }
+}
+
+function resetToDefaults() {
+  localStorage.removeItem('edvelup_courses');
+  localStorage.removeItem('edvelup_offer');
+  coursesData = JSON.parse(JSON.stringify(DEFAULT_COURSES_DATA));
+  offerData = JSON.parse(JSON.stringify(DEFAULT_OFFER_DATA));
+  refreshDashboard();
+}
+
+// ==========================================
+// 3. DATA — Recent Admissions (20 entries)
 // ==========================================
 const recentAdmissions = [
   { name: 'Akhil Nair', location: 'Kochi', course: 'Stock Market Trading', time: 'Today 10:15 AM' },
@@ -78,7 +134,7 @@ const recentAdmissions = [
 ];
 
 // ==========================================
-// 3. UTILITY FUNCTIONS
+// 4. UTILITY FUNCTIONS
 // ==========================================
 
 /** Format amount to ₹XX,XXX */
@@ -94,6 +150,13 @@ function formatTime() {
   const ampm = hours >= 12 ? 'PM' : 'AM';
   hours = hours % 12 || 12;
   return `Today ${hours}:${minutes} ${ampm}`;
+}
+
+/** Format full date and time */
+function formatFullDateTime() {
+  const now = new Date();
+  const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true };
+  return now.toLocaleDateString('en-IN', options);
 }
 
 /** Extract initials from full name */
@@ -148,8 +211,17 @@ function animateCountUp(element, target, duration = 1200) {
   requestAnimationFrame(step);
 }
 
+/** Auto-determine course status based on availability */
+function autoStatus(available, total) {
+  const pct = ((total - available) / total) * 100;
+  if (available <= 2) return { status: 'Closing Soon', statusColor: 'red', expectedClosure: 'Within 1 Day' };
+  if (available <= 7) return { status: 'Almost Full', statusColor: 'red', expectedClosure: 'Within 2 Days' };
+  if (pct >= 60) return { status: 'Limited Availability', statusColor: 'orange', expectedClosure: 'Within 5 Days' };
+  return { status: 'Available', statusColor: 'green', expectedClosure: 'Within 2 Weeks' };
+}
+
 // ==========================================
-// 4. RENDER — Course Cards
+// 5. RENDER — Course Cards (with +/- seat buttons)
 // ==========================================
 function renderCourseCards() {
   const grid = document.getElementById('course-cards-grid');
@@ -158,7 +230,7 @@ function renderCourseCards() {
   grid.innerHTML = coursesData.map(course => {
     const percentage = Math.round((course.registered / course.seatsAllocated) * 100);
     const barColor = getProgressColor(percentage);
-    const badgeClass = course.statusColor === 'red' ? 'badge-red' : 'badge-orange';
+    const badgeClass = course.statusColor === 'red' ? 'badge-red' : (course.statusColor === 'green' ? 'badge-green' : 'badge-orange');
 
     return `
       <div class="course-card" id="card-${course.id}">
@@ -182,7 +254,7 @@ function renderCourseCards() {
               </div>
               <div class="seat-num-item">
                 <span class="seat-num-value">${course.registered}</span>
-                <span class="seat-num-label">Registered</span>
+                <span class="seat-num-label">Filled</span>
               </div>
               <div class="seat-num-item">
                 <span class="seat-num-value" style="color: ${course.available <= 7 ? '#e74c3c' : '#f39c12'}">${course.available}</span>
@@ -200,7 +272,7 @@ function renderCourseCards() {
 }
 
 // ==========================================
-// 5. RENDER — Recent Admissions
+// 7. RENDER — Recent Admissions
 // ==========================================
 function renderAdmissions() {
   const list = document.getElementById('admissions-list');
@@ -224,7 +296,7 @@ function renderAdmissions() {
 }
 
 // ==========================================
-// 6. RENDER — Offer Eligibility Counters
+// 8. RENDER — Offer Eligibility Counters
 // ==========================================
 function renderEligibilityCounters() {
   const grid = document.getElementById('eligibility-grid');
@@ -245,7 +317,7 @@ function renderEligibilityCounters() {
 }
 
 // ==========================================
-// 7. RENDER — Batch Occupancy Chart
+// 9. RENDER — Batch Occupancy Chart
 // ==========================================
 function renderOccupancyChart() {
   const chart = document.getElementById('occupancy-chart');
@@ -269,7 +341,7 @@ function renderOccupancyChart() {
 }
 
 // ==========================================
-// 8. RENDER — Course Demand Ranking
+// 10. RENDER — Course Demand Ranking
 // ==========================================
 function renderDemandRanking() {
   const container = document.getElementById('demand-ranking');
@@ -298,7 +370,7 @@ function renderDemandRanking() {
 }
 
 // ==========================================
-// 9. RENDER — Seat Utilization Circles
+// 11. RENDER — Seat Utilization Circles
 // ==========================================
 function renderUtilization() {
   const grid = document.getElementById('utilization-grid');
@@ -320,7 +392,7 @@ function renderUtilization() {
 }
 
 // ==========================================
-// 10. AVAILABILITY CHECKER — Dropdown + Dialog
+// 12. AVAILABILITY CHECKER — Dropdown + Dialog
 // ==========================================
 function populateDropdowns() {
   const select = document.getElementById('course-select');
@@ -366,7 +438,7 @@ function openAvailabilityDialog(courseId) {
     </div>
     <div class="modal-data-row">
       <span class="modal-data-label">Offer Category</span>
-      <span class="modal-data-value">${course.offerCategory}</span>
+      <span class="modal-data-value">${offerData.offerName || course.offerCategory}</span>
     </div>
     <div class="modal-data-row">
       <span class="modal-data-label">Expected Closure</span>
@@ -384,7 +456,7 @@ function openAvailabilityDialog(courseId) {
 }
 
 // ==========================================
-// 11. STUDENT VIEW — Screenshot Mode
+// 13. STUDENT VIEW — Screenshot Mode
 // ==========================================
 function openStudentView(courseId) {
   const course = courseId ? coursesData.find(c => c.id === courseId) : null;
@@ -411,6 +483,8 @@ function renderStudentViewData(course) {
   const body = document.getElementById('sv-data');
   if (!body) return;
 
+  const offerStatusText = offerData.offerStatus || 'Active';
+
   body.innerHTML = `
     <div class="sv-data-row">
       <span class="sv-data-label">Course</span>
@@ -434,11 +508,11 @@ function renderStudentViewData(course) {
     </div>
     <div class="sv-data-row">
       <span class="sv-data-label">Offer Status</span>
-      <span class="sv-data-value"><span class="sv-status-active">ACTIVE</span></span>
+      <span class="sv-data-value"><span class="sv-status-active">${offerStatusText.toUpperCase()}</span></span>
     </div>
     <div class="sv-data-row">
       <span class="sv-data-label">Eligibility</span>
-      <span class="sv-data-value">Available Until First 50 Registrations</span>
+      <span class="sv-data-value">${offerData.offerName || 'Available Until First 50 Registrations'}</span>
     </div>
     <div class="sv-data-row">
       <span class="sv-data-label">Expected Closure</span>
@@ -454,7 +528,7 @@ function renderStudentViewData(course) {
 }
 
 // ==========================================
-// 12. TOAST NOTIFICATIONS — Live Activity Feed
+// 14. TOAST NOTIFICATIONS — Live Activity Feed
 // ==========================================
 let toastIndex = 0;
 
@@ -505,7 +579,7 @@ function startActivityFeed() {
 }
 
 // ==========================================
-// 13. VIEWER COUNTER — Simulated
+// 15. VIEWER COUNTER — Simulated
 // ==========================================
 let currentViewers = 24;
 
@@ -526,7 +600,7 @@ function startViewerCounter() {
 }
 
 // ==========================================
-// 14. STATS — Animate on Load
+// 16. STATS — Animate on Load
 // ==========================================
 function animateStats() {
   const totalRemaining = coursesData.reduce((sum, c) => sum + c.available, 0);
@@ -548,110 +622,281 @@ function animateStats() {
 }
 
 // ==========================================
-// 15. ACTION HANDLERS
+// 17. REFRESH DASHBOARD — Live updates
 // ==========================================
+function refreshDashboard() {
+  renderCourseCards();
+  renderEligibilityCounters();
+  renderOccupancyChart();
+  renderDemandRanking();
+  renderUtilization();
+  populateDropdowns();
+  animateStats();
 
-/** Screenshot button — flash effect + alert */
-function handleScreenshot() {
-  const modalContent = document.querySelector('#availability-dialog .modal-content');
-  if (modalContent) {
-    modalContent.classList.add('flash-effect');
-    setTimeout(() => modalContent.classList.remove('flash-effect'), 500);
+  // Update header offer status badge
+  const offerBadgeValue = document.querySelector('#badge-offer .badge-value');
+  if (offerBadgeValue) {
+    offerBadgeValue.textContent = offerData.offerStatus || 'Active';
   }
-  // Use the Clipboard API if available
-  alert('📸 Screenshot Ready!\n\nUse your system screenshot tool:\n• Mac: Cmd + Shift + 4\n• Windows: Win + Shift + S\n\nThe dialog is highlighted for easy capture.');
 }
 
-/** Print button */
-function handlePrint() {
-  window.print();
+// ==========================================
+// 18. ADMIN PANEL — Password & Access
+// ==========================================
+let adminAuthenticated = false;
+
+function openAdminLogin() {
+  const dialog = document.getElementById('admin-login-dialog');
+  if (dialog) {
+    const passwordInput = document.getElementById('admin-password-input');
+    if (passwordInput) passwordInput.value = '';
+    const errorEl = document.getElementById('admin-login-error');
+    if (errorEl) errorEl.style.display = 'none';
+    dialog.showModal();
+  }
 }
 
-/** Download report as text file */
-function handleDownload() {
-  const dialog = document.getElementById('availability-dialog');
-  const courseId = dialog?.dataset.currentCourse;
-  const course = coursesData.find(c => c.id === courseId);
+function validateAdminPassword() {
+  const passwordInput = document.getElementById('admin-password-input');
+  const errorEl = document.getElementById('admin-login-error');
 
-  if (!course) {
-    alert('No course selected.');
+  if (passwordInput && passwordInput.value === 'admin123') {
+    adminAuthenticated = true;
+    document.getElementById('admin-login-dialog').close();
+    openAdminPanel();
+  } else {
+    if (errorEl) {
+      errorEl.style.display = 'block';
+      errorEl.textContent = '⚠ Incorrect password. Please try again.';
+    }
+    if (passwordInput) {
+      passwordInput.classList.add('shake');
+      setTimeout(() => passwordInput.classList.remove('shake'), 500);
+    }
+  }
+}
+
+function openAdminPanel() {
+  if (!adminAuthenticated) {
+    openAdminLogin();
     return;
   }
 
-  const now = new Date();
-  const dateStr = now.toISOString().split('T')[0];
-  const timeStr = formatTime();
-
-  const report = `
-═══════════════════════════════════════════════
-  EDVELUP ACADEMY — BATCH AVAILABILITY REPORT
-═══════════════════════════════════════════════
-
-Generated: ${timeStr}
-Report Date: ${dateStr}
-System: Edvelup Batch Management System
-
-───────────────────────────────────────────────
-  COURSE DETAILS
-───────────────────────────────────────────────
-
-Course Name:        ${course.name}
-Course ID:          ${course.id.toUpperCase()}
-Current Intake:     July 2026
-
-───────────────────────────────────────────────
-  FEE STRUCTURE
-───────────────────────────────────────────────
-
-Regular Fee:        ${formatCurrency(course.regularFee)}
-Offer Fee:          ${formatCurrency(course.offerFee)}
-Discount:           ${course.discount}%
-Savings:            ${formatCurrency(course.regularFee - course.offerFee)}
-
-───────────────────────────────────────────────
-  SEAT AVAILABILITY
-───────────────────────────────────────────────
-
-Total Seats:        ${course.seatsAllocated}
-Seats Filled:       ${course.registered}
-Seats Remaining:    ${course.available}
-Occupancy:          ${Math.round((course.registered / course.seatsAllocated) * 100)}%
-Status:             ${course.status}
-
-───────────────────────────────────────────────
-  OFFER INFORMATION
-───────────────────────────────────────────────
-
-Offer Eligibility:  AVAILABLE
-Offer Category:     ${course.offerCategory}
-Expected Closure:   ${course.expectedClosure}
-
-───────────────────────────────────────────────
-  RECOMMENDATION
-───────────────────────────────────────────────
-
-Advise Student To Reserve Seat Immediately
-
-═══════════════════════════════════════════════
-  This is an internal report generated by
-  Edvelup Batch Management System.
-  For counselor use only.
-═══════════════════════════════════════════════
-`.trim();
-
-  const blob = new Blob([report], { type: 'text/plain;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = `batch_report_${course.id}_${dateStr}.txt`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+  populateAdminFields();
+  const dialog = document.getElementById('admin-panel-dialog');
+  if (dialog) dialog.showModal();
 }
 
 // ==========================================
-// 16. EVENT LISTENERS — Setup
+// 19. ADMIN PANEL — Populate Fields
+// ==========================================
+function populateAdminFields() {
+  // Populate course fields
+  coursesData.forEach((course, index) => {
+    const prefix = `admin-course-${index}`;
+    setVal(`${prefix}-name`, course.name);
+    setVal(`${prefix}-regular-fee`, course.regularFee);
+    setVal(`${prefix}-offer-fee`, course.offerFee);
+    setVal(`${prefix}-discount`, course.discount);
+    setVal(`${prefix}-total-seats`, course.seatsAllocated);
+    setVal(`${prefix}-filled-seats`, course.registered);
+
+    const availEl = document.getElementById(`${prefix}-available-seats`);
+    if (availEl) availEl.textContent = course.available;
+
+    setVal(`${prefix}-status`, course.status);
+    setVal(`${prefix}-expected-closure`, course.expectedClosure);
+  });
+
+  // Populate offer fields
+  setVal('admin-offer-name', offerData.offerName);
+  setVal('admin-offer-percentage', offerData.offerPercentage);
+  setVal('admin-offer-status', offerData.offerStatus);
+  setVal('admin-offer-total-seats', offerData.totalOfferSeats);
+  setVal('admin-offer-used-seats', offerData.usedOfferSeats);
+
+  const remainingEl = document.getElementById('admin-offer-remaining-seats');
+  if (remainingEl) remainingEl.textContent = offerData.totalOfferSeats - offerData.usedOfferSeats;
+}
+
+function setVal(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.value = value;
+}
+
+// ==========================================
+// 20. ADMIN PANEL — Save Configuration
+// ==========================================
+function saveAdminConfig() {
+  // Read course fields
+  coursesData.forEach((course, index) => {
+    const prefix = `admin-course-${index}`;
+    course.name = getVal(`${prefix}-name`) || course.name;
+    course.regularFee = parseInt(getVal(`${prefix}-regular-fee`)) || course.regularFee;
+    course.offerFee = parseInt(getVal(`${prefix}-offer-fee`)) || course.offerFee;
+    course.discount = parseInt(getVal(`${prefix}-discount`)) || course.discount;
+    course.seatsAllocated = parseInt(getVal(`${prefix}-total-seats`)) || course.seatsAllocated;
+    course.registered = parseInt(getVal(`${prefix}-filled-seats`)) || 0;
+    course.available = course.seatsAllocated - course.registered;
+
+    const statusVal = getVal(`${prefix}-status`);
+    if (statusVal) {
+      course.status = statusVal;
+      // Determine status color from status text
+      if (statusVal === 'Closing Soon' || statusVal === 'Almost Full') {
+        course.statusColor = 'red';
+      } else if (statusVal === 'Limited Availability') {
+        course.statusColor = 'orange';
+      } else {
+        course.statusColor = 'green';
+      }
+    }
+
+    const closureVal = getVal(`${prefix}-expected-closure`);
+    if (closureVal) {
+      course.expectedClosure = closureVal;
+    }
+
+    // Update offer category with current offer name
+    course.offerCategory = offerData.offerName || course.offerCategory;
+  });
+
+  // Read offer fields
+  offerData.offerName = getVal('admin-offer-name') || offerData.offerName;
+  offerData.offerPercentage = parseInt(getVal('admin-offer-percentage')) || offerData.offerPercentage;
+  offerData.offerStatus = getVal('admin-offer-status') || offerData.offerStatus;
+  offerData.totalOfferSeats = parseInt(getVal('admin-offer-total-seats')) || offerData.totalOfferSeats;
+  offerData.usedOfferSeats = parseInt(getVal('admin-offer-used-seats')) || offerData.usedOfferSeats;
+  offerData.remainingOfferSeats = offerData.totalOfferSeats - offerData.usedOfferSeats;
+
+  saveToStorage();
+  refreshDashboard();
+
+  // Show save confirmation
+  showAdminToast('✅ Configuration saved successfully!');
+
+  // Update available seats display in admin panel
+  populateAdminFields();
+}
+
+function getVal(id) {
+  const el = document.getElementById(id);
+  return el ? el.value : '';
+}
+
+function showAdminToast(message) {
+  const toast = document.getElementById('admin-save-toast');
+  if (toast) {
+    toast.textContent = message;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+}
+
+// ==========================================
+// 21. AUTO-CALCULATE Available Seats in Admin
+// ==========================================
+function setupAdminAutoCalc() {
+  coursesData.forEach((course, index) => {
+    const totalInput = document.getElementById(`admin-course-${index}-total-seats`);
+    const filledInput = document.getElementById(`admin-course-${index}-filled-seats`);
+    const availDisplay = document.getElementById(`admin-course-${index}-available-seats`);
+
+    const calc = () => {
+      const total = parseInt(totalInput?.value) || 0;
+      const filled = parseInt(filledInput?.value) || 0;
+      if (availDisplay) availDisplay.textContent = Math.max(0, total - filled);
+    };
+
+    if (totalInput) totalInput.addEventListener('input', calc);
+    if (filledInput) filledInput.addEventListener('input', calc);
+  });
+
+  // Offer seats auto-calc
+  const offerTotalInput = document.getElementById('admin-offer-total-seats');
+  const offerUsedInput = document.getElementById('admin-offer-used-seats');
+  const offerRemainingDisplay = document.getElementById('admin-offer-remaining-seats');
+
+  const calcOffer = () => {
+    const total = parseInt(offerTotalInput?.value) || 0;
+    const used = parseInt(offerUsedInput?.value) || 0;
+    if (offerRemainingDisplay) offerRemainingDisplay.textContent = Math.max(0, total - used);
+  };
+
+  if (offerTotalInput) offerTotalInput.addEventListener('input', calcOffer);
+  if (offerUsedInput) offerUsedInput.addEventListener('input', calcOffer);
+}
+
+// ==========================================
+// 22. SCENARIO GENERATOR
+// ==========================================
+const SCENARIOS = {
+  'high-demand': {
+    label: 'High Demand',
+    seats: { 'stock-market': 7, 'forex': 12, 'integrated': 4 }
+  },
+  'very-high-demand': {
+    label: 'Very High Demand',
+    seats: { 'stock-market': 3, 'forex': 5, 'integrated': 2 }
+  },
+  'last-chance': {
+    label: 'Last Chance',
+    seats: { 'stock-market': 1, 'forex': 2, 'integrated': 1 }
+  }
+};
+
+function applyScenario(scenarioKey) {
+  const scenario = SCENARIOS[scenarioKey];
+  if (!scenario) return;
+
+  coursesData.forEach(course => {
+    const seatsLeft = scenario.seats[course.id];
+    if (seatsLeft !== undefined) {
+      course.available = seatsLeft;
+      course.registered = course.seatsAllocated - seatsLeft;
+
+      // Auto-update status
+      const statusInfo = autoStatus(course.available, course.seatsAllocated);
+      course.status = statusInfo.status;
+      course.statusColor = statusInfo.statusColor;
+      course.expectedClosure = statusInfo.expectedClosure;
+    }
+  });
+
+  saveToStorage();
+  populateAdminFields();
+  refreshDashboard();
+  showAdminToast(`🎯 Scenario "${scenario.label}" applied!`);
+}
+
+// ==========================================
+// 24. ACTION HANDLERS
+// ==========================================
+
+/** Print button */
+function handlePrint() {
+  document.body.classList.add('print-dialog-only');
+  window.print();
+  document.body.classList.remove('print-dialog-only');
+}
+
+// ==========================================
+// 25. ADMIN PANEL — Tab Navigation
+// ==========================================
+function switchAdminTab(tabName) {
+  // Update tab buttons
+  document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tabName);
+  });
+
+  // Update tab panels
+  document.querySelectorAll('.admin-tab-panel').forEach(panel => {
+    panel.classList.toggle('active', panel.id === `admin-tab-${tabName}`);
+  });
+}
+
+// ==========================================
+// 26. EVENT LISTENERS — Setup
 // ==========================================
 function setupEventListeners() {
   // Availability Checker dropdown
@@ -680,20 +925,14 @@ function setupEventListeners() {
     });
   }
 
-  // Screenshot, Print, Download buttons
-  const btnScreenshot = document.getElementById('btn-screenshot');
+  // Print button
   const btnPrint = document.getElementById('btn-print');
-  const btnDownload = document.getElementById('btn-download');
-
-  if (btnScreenshot) btnScreenshot.addEventListener('click', handleScreenshot);
   if (btnPrint) btnPrint.addEventListener('click', handlePrint);
-  if (btnDownload) btnDownload.addEventListener('click', handleDownload);
 
   // Generate Student View button
   const generateBtn = document.getElementById('generate-student-view');
   if (generateBtn) {
     generateBtn.addEventListener('click', () => {
-      // Use whatever course was last selected, or default to first
       const select = document.getElementById('course-select');
       const courseId = select?.value || coursesData[0].id;
       openStudentView(courseId);
@@ -724,12 +963,97 @@ function setupEventListeners() {
       }
     });
   }
+
+  // ---- ADMIN PANEL EVENT LISTENERS ----
+
+  // Admin Settings Button
+  const adminBtn = document.getElementById('admin-settings-btn');
+  if (adminBtn) {
+    adminBtn.addEventListener('click', () => {
+      if (adminAuthenticated) {
+        openAdminPanel();
+      } else {
+        openAdminLogin();
+      }
+    });
+  }
+
+  // Admin Login — Submit
+  const adminLoginSubmit = document.getElementById('admin-login-submit');
+  if (adminLoginSubmit) {
+    adminLoginSubmit.addEventListener('click', validateAdminPassword);
+  }
+
+  // Admin Login — Enter key
+  const adminPasswordInput = document.getElementById('admin-password-input');
+  if (adminPasswordInput) {
+    adminPasswordInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') validateAdminPassword();
+    });
+  }
+
+  // Admin Login — Close
+  const adminLoginClose = document.getElementById('admin-login-close');
+  const adminLoginDialog = document.getElementById('admin-login-dialog');
+  if (adminLoginClose && adminLoginDialog) {
+    adminLoginClose.addEventListener('click', () => adminLoginDialog.close());
+  }
+  if (adminLoginDialog) {
+    adminLoginDialog.addEventListener('click', (e) => {
+      if (e.target === adminLoginDialog) adminLoginDialog.close();
+    });
+  }
+
+  // Admin Panel — Close
+  const adminPanelClose = document.getElementById('admin-panel-close');
+  const adminPanelDialog = document.getElementById('admin-panel-dialog');
+  if (adminPanelClose && adminPanelDialog) {
+    adminPanelClose.addEventListener('click', () => adminPanelDialog.close());
+  }
+  if (adminPanelDialog) {
+    adminPanelDialog.addEventListener('click', (e) => {
+      if (e.target === adminPanelDialog) adminPanelDialog.close();
+    });
+  }
+
+  // Admin Panel — Save
+  const adminSaveBtn = document.getElementById('admin-save-btn');
+  if (adminSaveBtn) {
+    adminSaveBtn.addEventListener('click', saveAdminConfig);
+  }
+
+  // Admin Panel — Reset
+  const adminResetBtn = document.getElementById('admin-reset-btn');
+  if (adminResetBtn) {
+    adminResetBtn.addEventListener('click', () => {
+      if (confirm('⚠ Reset all values to defaults? This cannot be undone.')) {
+        resetToDefaults();
+        populateAdminFields();
+        showAdminToast('🔄 Dashboard reset to default values!');
+      }
+    });
+  }
+
+  // Admin Panel — Tabs
+  document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => switchAdminTab(btn.dataset.tab));
+  });
+
+  // Scenario buttons
+  document.querySelectorAll('.scenario-btn').forEach(btn => {
+    btn.addEventListener('click', () => applyScenario(btn.dataset.scenario));
+  });
+  // Setup auto-calculate in admin panel
+  setupAdminAutoCalc();
 }
 
 // ==========================================
-// 17. INITIALIZATION
+// 27. INITIALIZATION
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
+  // Load data from localStorage or use defaults
+  loadFromStorage();
+
   // Render all components
   renderCourseCards();
   renderAdmissions();
@@ -757,4 +1081,5 @@ document.addEventListener('DOMContentLoaded', () => {
   }, 3000);
 
   console.log('✅ Edvelup Batch Management System loaded successfully.');
+  console.log('🔐 Admin Panel available — click ⚙ Admin Settings in the header.');
 });

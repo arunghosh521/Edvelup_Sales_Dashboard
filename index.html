@@ -1,17 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Edvelup Batch Management System — Internal Dashboard</title>
-  <meta name="description" content="Internal batch availability and sales support dashboard for Edvelup Academy counselors.">
+  <meta name="description"
+    content="Internal batch availability and sales support dashboard for Edvelup Academy counselors.">
   <meta name="robots" content="noindex, nofollow">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
   <link rel="icon" type="image/png" href="logo.png">
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
   <!-- ============ DASHBOARD HEADER ============ -->
@@ -46,6 +51,11 @@
           <span class="viewer-icon">👁</span>
           <span id="viewer-count">24</span> counselors viewing
         </div>
+        <!-- Admin Settings Button -->
+        <button class="admin-settings-btn" id="admin-settings-btn" aria-label="Open Admin Settings">
+          <span class="admin-icon">⚙</span>
+          Admin Settings
+        </button>
       </div>
     </div>
   </header>
@@ -92,7 +102,8 @@
           <span class="title-accent"></span>
           Course Availability Panel
         </h2>
-        <button class="btn btn-secondary btn-sm" id="generate-student-view" aria-label="Generate student view for screenshot">
+        <button class="btn btn-secondary btn-sm" id="generate-student-view"
+          aria-label="Generate student view for screenshot">
           📸 Generate Student View
         </button>
       </div>
@@ -192,14 +203,8 @@
         <!-- Filled by JS -->
       </div>
       <div class="modal-actions" id="availability-dialog-actions">
-        <button class="btn btn-primary" id="btn-screenshot" aria-label="Take screenshot">
-          📸 Take Screenshot
-        </button>
         <button class="btn btn-secondary" id="btn-print" aria-label="Print report">
           🖨 Print
-        </button>
-        <button class="btn btn-secondary" id="btn-download" aria-label="Download report">
-          ⬇ Download Report
         </button>
       </div>
     </div>
@@ -232,6 +237,317 @@
     </div>
   </dialog>
 
+  <!-- ============ ADMIN LOGIN DIALOG ============ -->
+  <dialog class="admin-login-dialog" id="admin-login-dialog" aria-labelledby="admin-login-title">
+    <div class="admin-login-content">
+      <button class="modal-close" id="admin-login-close" aria-label="Close login">&times;</button>
+      <span class="admin-login-icon">🔐</span>
+      <h2 class="admin-login-title" id="admin-login-title">Admin Access</h2>
+      <p class="admin-login-subtitle">Enter password to access the Admin Control Panel</p>
+      <div class="admin-login-input-group">
+        <span class="input-icon">🔑</span>
+        <input type="password" id="admin-password-input" placeholder="Enter admin password" autocomplete="off">
+      </div>
+      <div class="admin-login-error" id="admin-login-error"></div>
+      <div class="admin-login-actions">
+        <button class="btn btn-primary" id="admin-login-submit">🔓 Unlock</button>
+        <button class="btn btn-secondary" id="admin-login-close-btn"
+          onclick="document.getElementById('admin-login-dialog').close()">Cancel</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- ============ ADMIN PANEL DIALOG ============ -->
+  <dialog class="admin-panel-dialog" id="admin-panel-dialog" aria-labelledby="admin-panel-title">
+    <div class="admin-panel-content">
+
+      <!-- Admin Header -->
+      <div class="admin-panel-header">
+        <div class="admin-panel-title-area">
+          <span class="admin-panel-title-icon">⚙</span>
+          <div>
+            <h2 class="admin-panel-title" id="admin-panel-title">Admin Control Panel</h2>
+            <p class="admin-panel-subtitle">Manage courses, offers, and dashboard settings</p>
+          </div>
+        </div>
+        <button class="admin-panel-close" id="admin-panel-close" aria-label="Close admin panel">&times;</button>
+      </div>
+
+      <!-- Admin Tabs -->
+      <div class="admin-tabs">
+        <button class="admin-tab-btn active" data-tab="courses">📚 Courses</button>
+        <button class="admin-tab-btn" data-tab="offers">🎁 Offers</button>
+        <button class="admin-tab-btn" data-tab="scenarios">⚡ Scenarios</button>
+      </div>
+
+      <!-- Admin Body -->
+      <div class="admin-panel-body">
+
+        <!-- TAB: Courses -->
+        <div class="admin-tab-panel active" id="admin-tab-courses">
+
+          <!-- Course 0: Stock Market Trading -->
+          <div class="admin-course-block">
+            <div class="admin-course-title">Stock Market Trading</div>
+            <div class="admin-field-grid">
+              <div class="admin-field admin-field-full">
+                <label for="admin-course-0-name">Course Name</label>
+                <input type="text" id="admin-course-0-name" value="Stock Market Trading">
+              </div>
+              <div class="admin-field">
+                <label for="admin-course-0-regular-fee">Regular Fee (₹)</label>
+                <input type="number" id="admin-course-0-regular-fee" value="30000">
+              </div>
+              <div class="admin-field">
+                <label for="admin-course-0-offer-fee">Offer Fee (₹)</label>
+                <input type="number" id="admin-course-0-offer-fee" value="14499">
+              </div>
+              <div class="admin-field">
+                <label for="admin-course-0-discount">Offer Percentage (%)</label>
+                <input type="number" id="admin-course-0-discount" value="51" min="0" max="100">
+              </div>
+              <div class="admin-field">
+                <label for="admin-course-0-total-seats">Total Seats</label>
+                <input type="number" id="admin-course-0-total-seats" value="50" min="1">
+              </div>
+              <div class="admin-field">
+                <label for="admin-course-0-filled-seats">Filled Seats</label>
+                <input type="number" id="admin-course-0-filled-seats" value="43" min="0">
+              </div>
+              <div class="admin-field">
+                <label>Available Seats (Auto)</label>
+                <div class="auto-calc-value" id="admin-course-0-available-seats">7</div>
+              </div>
+              <div class="admin-field">
+                <label for="admin-course-0-status">Course Status</label>
+                <select id="admin-course-0-status">
+                  <option value="Almost Full">Almost Full</option>
+                  <option value="Limited Availability">Limited Availability</option>
+                  <option value="Closing Soon">Closing Soon</option>
+                  <option value="Available">Available</option>
+                </select>
+              </div>
+              <div class="admin-field">
+                <label for="admin-course-0-expected-closure">Expected Closure</label>
+                <select id="admin-course-0-expected-closure">
+                  <option value="Within 1 Day">Within 1 Day</option>
+                  <option value="Within 2 Days" selected>Within 2 Days</option>
+                  <option value="Within 3 Days">Within 3 Days</option>
+                  <option value="Within 5 Days">Within 5 Days</option>
+                  <option value="Within 1 Week">Within 1 Week</option>
+                  <option value="Within 2 Weeks">Within 2 Weeks</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Course 1: Forex Trading -->
+          <div class="admin-course-block">
+            <div class="admin-course-title">Forex Trading</div>
+            <div class="admin-field-grid">
+              <div class="admin-field admin-field-full">
+                <label for="admin-course-1-name">Course Name</label>
+                <input type="text" id="admin-course-1-name" value="Forex Trading">
+              </div>
+              <div class="admin-field">
+                <label for="admin-course-1-regular-fee">Regular Fee (₹)</label>
+                <input type="number" id="admin-course-1-regular-fee" value="30000">
+              </div>
+              <div class="admin-field">
+                <label for="admin-course-1-offer-fee">Offer Fee (₹)</label>
+                <input type="number" id="admin-course-1-offer-fee" value="14499">
+              </div>
+              <div class="admin-field">
+                <label for="admin-course-1-discount">Offer Percentage (%)</label>
+                <input type="number" id="admin-course-1-discount" value="51" min="0" max="100">
+              </div>
+              <div class="admin-field">
+                <label for="admin-course-1-total-seats">Total Seats</label>
+                <input type="number" id="admin-course-1-total-seats" value="50" min="1">
+              </div>
+              <div class="admin-field">
+                <label for="admin-course-1-filled-seats">Filled Seats</label>
+                <input type="number" id="admin-course-1-filled-seats" value="38" min="0">
+              </div>
+              <div class="admin-field">
+                <label>Available Seats (Auto)</label>
+                <div class="auto-calc-value" id="admin-course-1-available-seats">12</div>
+              </div>
+              <div class="admin-field">
+                <label for="admin-course-1-status">Course Status</label>
+                <select id="admin-course-1-status">
+                  <option value="Almost Full">Almost Full</option>
+                  <option value="Limited Availability" selected>Limited Availability</option>
+                  <option value="Closing Soon">Closing Soon</option>
+                  <option value="Available">Available</option>
+                </select>
+              </div>
+              <div class="admin-field">
+                <label for="admin-course-1-expected-closure">Expected Closure</label>
+                <select id="admin-course-1-expected-closure">
+                  <option value="Within 1 Day">Within 1 Day</option>
+                  <option value="Within 2 Days">Within 2 Days</option>
+                  <option value="Within 3 Days">Within 3 Days</option>
+                  <option value="Within 5 Days" selected>Within 5 Days</option>
+                  <option value="Within 1 Week">Within 1 Week</option>
+                  <option value="Within 2 Weeks">Within 2 Weeks</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Course 2: Integrated Trading Program -->
+          <div class="admin-course-block">
+            <div class="admin-course-title">Integrated Trading Program</div>
+            <div class="admin-field-grid">
+              <div class="admin-field admin-field-full">
+                <label for="admin-course-2-name">Course Name</label>
+                <input type="text" id="admin-course-2-name" value="Integrated Trading Program">
+              </div>
+              <div class="admin-field">
+                <label for="admin-course-2-regular-fee">Regular Fee (₹)</label>
+                <input type="number" id="admin-course-2-regular-fee" value="40000">
+              </div>
+              <div class="admin-field">
+                <label for="admin-course-2-offer-fee">Offer Fee (₹)</label>
+                <input type="number" id="admin-course-2-offer-fee" value="19999">
+              </div>
+              <div class="admin-field">
+                <label for="admin-course-2-discount">Offer Percentage (%)</label>
+                <input type="number" id="admin-course-2-discount" value="50" min="0" max="100">
+              </div>
+              <div class="admin-field">
+                <label for="admin-course-2-total-seats">Total Seats</label>
+                <input type="number" id="admin-course-2-total-seats" value="50" min="1">
+              </div>
+              <div class="admin-field">
+                <label for="admin-course-2-filled-seats">Filled Seats</label>
+                <input type="number" id="admin-course-2-filled-seats" value="46" min="0">
+              </div>
+              <div class="admin-field">
+                <label>Available Seats (Auto)</label>
+                <div class="auto-calc-value" id="admin-course-2-available-seats">4</div>
+              </div>
+              <div class="admin-field">
+                <label for="admin-course-2-status">Course Status</label>
+                <select id="admin-course-2-status">
+                  <option value="Almost Full">Almost Full</option>
+                  <option value="Limited Availability">Limited Availability</option>
+                  <option value="Closing Soon" selected>Closing Soon</option>
+                  <option value="Available">Available</option>
+                </select>
+              </div>
+              <div class="admin-field">
+                <label for="admin-course-2-expected-closure">Expected Closure</label>
+                <select id="admin-course-2-expected-closure">
+                  <option value="Within 1 Day" selected>Within 1 Day</option>
+                  <option value="Within 2 Days">Within 2 Days</option>
+                  <option value="Within 3 Days">Within 3 Days</option>
+                  <option value="Within 5 Days">Within 5 Days</option>
+                  <option value="Within 1 Week">Within 1 Week</option>
+                  <option value="Within 2 Weeks">Within 2 Weeks</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- TAB: Offers -->
+        <div class="admin-tab-panel" id="admin-tab-offers">
+          <div class="admin-course-block">
+            <div class="admin-course-title">Offer Configuration</div>
+            <div class="admin-field-grid">
+              <div class="admin-field admin-field-full">
+                <label for="admin-offer-name">Offer Name</label>
+                <input type="text" id="admin-offer-name" value="First 50 Pre-Registered Students Offer">
+              </div>
+              <div class="admin-field">
+                <label for="admin-offer-percentage">Offer Percentage (%)</label>
+                <select id="admin-offer-percentage">
+                  <option value="40">40%</option>
+                  <option value="50" selected>50%</option>
+                  <option value="60">60%</option>
+                  <option value="70">70%</option>
+                </select>
+              </div>
+              <div class="admin-field">
+                <label for="admin-offer-status">Offer Status</label>
+                <select id="admin-offer-status">
+                  <option value="Active" selected>Active</option>
+                  <option value="Limited">Limited</option>
+                  <option value="Closing Soon">Closing Soon</option>
+                  <option value="Expired">Expired</option>
+                </select>
+              </div>
+              <div class="admin-field">
+                <label for="admin-offer-total-seats">Total Offer Seats</label>
+                <input type="number" id="admin-offer-total-seats" value="50" min="1">
+              </div>
+              <div class="admin-field">
+                <label for="admin-offer-used-seats">Used Offer Seats</label>
+                <input type="number" id="admin-offer-used-seats" value="43" min="0">
+              </div>
+              <div class="admin-field admin-field-full">
+                <label>Remaining Offer Seats (Auto)</label>
+                <div class="auto-calc-value" id="admin-offer-remaining-seats">7</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: Scenarios -->
+        <div class="admin-tab-panel" id="admin-tab-scenarios">
+          <div class="admin-course-block">
+            <div class="admin-course-title">One-Click Scenario Generator</div>
+            <p style="font-size: 0.82rem; color: #94a3b8; margin-bottom: 16px;">
+              Instantly apply pre-configured seat availability scenarios to all courses.
+            </p>
+            <div class="scenario-grid">
+              <button class="scenario-btn scenario-high" data-scenario="high-demand">
+                <span class="scenario-icon">🔥</span>
+                <span class="scenario-label">High Demand</span>
+                <span class="scenario-desc">Stock: 7 left<br>Forex: 12 left<br>Integrated: 4 left</span>
+              </button>
+              <button class="scenario-btn scenario-very-high" data-scenario="very-high-demand">
+                <span class="scenario-icon">⚡</span>
+                <span class="scenario-label">Very High Demand</span>
+                <span class="scenario-desc">Stock: 3 left<br>Forex: 5 left<br>Integrated: 2 left</span>
+              </button>
+              <button class="scenario-btn scenario-last" data-scenario="last-chance">
+                <span class="scenario-icon">🚨</span>
+                <span class="scenario-label">Last Chance</span>
+                <span class="scenario-desc">Stock: 1 left<br>Forex: 2 left<br>Integrated: 1 left</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Admin Footer -->
+      <div class="admin-panel-footer">
+        <div class="admin-footer-left">
+          <button class="btn btn-danger btn-sm" id="admin-reset-btn">🔄 Reset To Default Values</button>
+        </div>
+        <div class="admin-footer-right">
+          <button class="btn btn-secondary btn-sm"
+            onclick="document.getElementById('admin-panel-dialog').close()">Close</button>
+          <button class="btn btn-primary btn-sm" id="admin-save-btn">💾 Save Configuration</button>
+        </div>
+      </div>
+
+      </div>
+
+      <!-- ============ ADMIN SAVE TOAST ============ -->
+      <div class="admin-save-toast" id="admin-save-toast"></div>
+
+    </div>
+  </dialog>
+
+
+
   <script src="script.js"></script>
 </body>
+
 </html>
